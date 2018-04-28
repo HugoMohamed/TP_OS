@@ -1,45 +1,59 @@
-#ifndef LISTE_C
-#define LISTE_C
-
 #include "liste.h"
-#include "allocation.h"
 
 liste liste_vide()
 {
-    return NULL;
+  return NULL;
 }
 
 int est_liste_vide(liste l)
 {
-    if(l == liste_vide())
-	return 1;
-    return 0;
+  if(l==liste_vide())
+    return 1;
+  return 0;
 }
 
-liste inserer_element_liste(liste l, element elem)
+liste inserer_element_liste(liste l,element elem)
 {
-    liste lnew = (liste)allocation_mem(1,sizeof(struct_cellule));
-    lnew->objet = elem;
-    lnew->suivant = l;
-    return lnew;
+  liste lnew=(liste)malloc(sizeof(struct_cellule));
+  lnew->objet = elem;
+  lnew->suivant=l;
+  return lnew;
+}
+
+liste enfiler(liste l,element elem)
+{
+    
+    liste lnew=inserer_element_liste(liste_vide(),elem);
+    liste p = l;
+
+    if(est_liste_vide(l))
+    {
+	return lnew;
+    }
+
+    while(p->suivant != liste_vide())
+    {
+	printf("here\n");
+	p = p->suivant;
+    }
+  
+    p->suivant = lnew;
+
+    return l;
 }
 
 element renvoie_premier_liste(liste l)
 {
-    if(est_liste_vide(l))
-    {
-	fprintf(stderr,"Erreur, liste vide\n");
-	exit(EXIT_FAILURE);
-    }
-
-    return l->objet;
+  if(est_liste_vide(l))
+    printf("Erreur la liste est vide dans la fonction renvoie_premier\n");
+  return l->objet;
 }
 
-liste supprimer_premier_liste(liste l)
+liste supprimer_element_liste(liste l)
 {
-    liste lsuivant = l->suivant;
-    libere_mem(&l);
-    return lsuivant;
+  liste lsuivant=l->suivant;
+  free(l);
+  return lsuivant;
 }
 
-#endif
+

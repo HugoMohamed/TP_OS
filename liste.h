@@ -1,13 +1,14 @@
 #ifndef LISTE_H
 #define LISTE_H
 
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef int element;
 
-typedef struct cellule
-{
-    element objet;
-    struct cellule * suivant;
+typedef struct cellule{
+element objet;
+struct cellule * suivant;
 }struct_cellule;
 
 typedef struct_cellule * liste;
@@ -25,6 +26,8 @@ liste inserer_element_liste(liste l, element elem);
 element renvoie_premier_liste(liste l);
 
 /* supprime la premiere cellule de la liste l */
-liste supprimer_premier_liste(liste l);
+liste supprimer_element_liste(liste l);
+
+liste enfiler(liste l, element elem);
 
 #endif

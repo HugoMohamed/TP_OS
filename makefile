@@ -1,8 +1,8 @@
 CC = gcc
 OPTIONS = -Wall
 
-algo: algo.o allocation.o liste.o pile.o file.o
-	$(CC) $(OPTIONS) algo.o allocation.o liste.o pile.o file.o -o algo
+algo: algo.o liste.o
+	$(CC) $(OPTIONS) algo.o liste.o -o algo
 %o:%c %h
 	$(CC) -o $@ -c $< $(OPTIONS)
 
