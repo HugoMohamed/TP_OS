@@ -3,6 +3,8 @@
  *  Algorithmes de remplacement  *
  *  de page                      *
  *                               *
+ *  Auteur : Hugo MOHAMED        *
+ *                               *
  ********************************/
 
 #include <stdio.h>
@@ -12,6 +14,18 @@
 
 void usage(char* s);
 
+// First In First Out
+int fifo(int nbAcces,int *valide, int *acces, int caseRAM);
+
+// Less Rencently Use
+int lru();
+
+// Algorithme de l'Horloge
+int horloge();
+
+// Optimal
+int optimal();
+
 int main(int argc, char* argv[])
 {
     if(argc < 5)
@@ -19,6 +33,12 @@ int main(int argc, char* argv[])
 
     int algo = atoi(argv[1]);
     int caseRAM = atoi(argv[2]);
+
+	if(caseRAM < 1)
+	{
+		fprintf(stderr,"Erreur, nombre de case invalide\n");
+		exit(EXIT_FAILURE);
+	}
 
     FILE* acces_mem = NULL;
 	acces_mem = fopen(argv[4],"r");
@@ -35,65 +55,39 @@ int main(int argc, char* argv[])
     int *valide;
     int *b_acces;
     liste pageRAM = liste_vide();
-    int i = 0, k = 0;
-    int j;
+    int i = 0;
     int page;
-    char* ligne;
+    char ligne[10];
 
     fgets(ligne,10,acces_mem);
 	nbAcces = atoi(ligne);
 	fgets(ligne,10,acces_mem);
     nbPage = atoi(ligne);
 
-	// on alloue le nombre de cases mémoire
-	acces = (int*)malloc(caseRAM * sizeof(int));
+	acces = (int*)malloc(nbAcces * sizeof(int));
 	valide = (int*)malloc(nbPage * sizeof(int));
+	if(acces == NULL || valide == NULL)
+	{
+		fprintf(stderr,"Erreur lors de l'allocation mémoire.\n");
+		exit(EXIT_FAILURE);
+	}
 
+	// On remplit le tableau des acces mémoire
 	while(fgets(ligne,10,acces_mem) != NULL)
 	{
-		acces[k] = atoi(ligne);
-		k++;
+		acces[i] = atoi(ligne);
+		printf("%d ",acces[i]);
+		i++;
 	}
+	printf("\n");
+	// On initialise valide a 0
+	for(i=0;i<caseRAM;i++)
+		valide[i] = 0;
 
     // FIFO
     if(algo == 1)
     {
-		if(acces == NULL || valide == NULL)
-		{
-		    fprintf(stderr,"Erreur lors de l'allocation mémoire.\n");
-		    exit(EXIT_FAILURE);
-		}
-
-		// on parcours le fichier des acces mémoire
-		for(i=0;i<nbAcces;i++)
-		{
-			page = acces[i];
-
-			// On test si la page n'est pas déjà en RAM
-			if(!valide[page])
-			{
-				valide[page] = 1;
-
-				// Si on a encore de la place en RAM
-				if(j < caseRAM)
-				{
-					pageRAM = inserer_element_liste(pageRAM,page);
-					j++;
-				}
-
-				// Si on a plus de place -> defaut de page
-				else
-				{
-					nbDefPage++;
-
-					// Remplacement FIFO
-					valide[renvoie_premier_liste(pageRAM)] = 0;
-					pageRAM = supprimer_element_liste(pageRAM);
-					pageRAM = inserer_element_liste(pageRAM,page);
-				}
-			}
-
-		}
+		nbDefPage = fifo(nbAcces, valide, acces, caseRAM);
     }
 
     // LRU
@@ -114,13 +108,14 @@ int main(int argc, char* argv[])
 
     }
 
-    for(j=0;j<caseRAM;i++)
+	printf("\n");
+    for(i=0;i<nbAcces;i++)
     {
-		fprintf(stdout,"%d ", acces[j]);
+		if(valide[i])
+			fprintf(stdout,"%d ", acces[i]);
     }
 	printf("\nDefauts de page : %d\n", nbDefPage);
 
-	free(pageRAM);
 	fclose(acces_mem);
 
     exit(EXIT_SUCCESS);
@@ -134,4 +129,45 @@ void usage(char* s)
     fprintf(stderr,"Mode affichage :\n    d: debug\n    c: classique\n");
 
     exit(EXIT_FAILURE);
+}
+
+
+int fifo(int nbAcces,int *valide, int *acces, int caseRAM)
+{
+	int i, j=0, nbDefPage=0;
+	int page;
+	liste pageRAM = liste_vide();
+
+	// on parcours les acces mémoire
+	for(i=0;i<nbAcces;i++)
+	{
+		page = acces[i];
+
+		// On test si la page n'est pas déjà en RAM
+		if(valide[page] == 0)
+		{
+			valide[page] = 1;
+
+			// Si on a encore de la place en RAM
+			if(j < caseRAM)
+			{
+				pageRAM = inserer_element_liste(pageRAM,page);
+				j++;
+			}
+
+			// Si on a plus de place -> defaut de page
+			else
+			{
+				nbDefPage++;
+
+				// Remplacement FIFO
+				valide[renvoie_premier_liste(pageRAM)] = 0;
+				pageRAM = supprimer_element_liste(pageRAM);
+				pageRAM = inserer_element_liste(pageRAM,page);
+			}
+		}
+
+	}
+	free(pageRAM);
+	return nbDefPage;
 }
