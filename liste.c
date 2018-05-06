@@ -22,21 +22,20 @@ liste inserer_element_liste(liste l,element elem)
 
 liste enfiler(liste l,element elem)
 {
-    
+
     liste lnew=inserer_element_liste(liste_vide(),elem);
     liste p = l;
 
     if(est_liste_vide(l))
     {
-	return lnew;
+		return lnew;
     }
 
     while(p->suivant != liste_vide())
     {
-	printf("here\n");
-	p = p->suivant;
+		p = p->suivant;
     }
-  
+
     p->suivant = lnew;
 
     return l;
@@ -55,5 +54,3 @@ liste supprimer_element_liste(liste l)
   free(l);
   return lsuivant;
 }
-
-

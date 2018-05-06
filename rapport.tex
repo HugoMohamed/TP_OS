@@ -1,0 +1,77 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[OT1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+
+\pagestyle{headings}
+
+\title{Rapport Systèmes d'Exploitation}
+\author{Hugo MOHAMED}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Protocole expérimental}
+On veut pouvoir évaluer le pourcentage de défauts de pages de chaque algorithme de remplacement de page (FIFO, LRU, Horloge et Optimal), en fonction du nombre de cases et du nombre de pages. Pour cela, on va créer différents programmes/scripts.
+
+\subsection{page.c}
+Ce programme permet de creer un fichier d'acces, lisible par le programme \textbf{algo.c}. Ce programme prend en paramètre le nombre de page que l'on veut, ainsi que le nom du fichier de destination. Le programme crée donc une suite de 10000 acces aléatoire (les valeurs correspondent au nombre de pages).
+
+\subsection{fichier.sh}
+Ce script permet de creer tout les fichier d'acces qui vont être utile pour la suite de l'experience. Il va creer des fichiers d'acces grace à \textbf{page.c}, avec des nombres de pages différents. On travail sur une échelle logarithmique $2^n$.
+
+\subsection{gros\_test.sh}
+Ce script lance chaque algorithme sur chaque fichier test avec un nombre de cases différents (toujours en puissance de 2). On obtient donc différents fichier possédant chacun 2 colonnes :
+
+\begin{enumerate}
+\item Le nombre de pages
+\item Le pourcentage de défauts de pages.
+\end{enumerate}
+
+\subsection{affichage.sh}
+Ce script a pour but de créer les différents graphes nécéssaires à l'analyse des résultats. Grace a gnuplot, le script crée les graphiques correspondant aux fichiers générés par \textbf{gros\_test.sh}.
+
+\subsection{experience.sh}
+Assemble tout les autres scripts et programmes.
+
+\newpage
+
+\section{Analyse des résultats}
+On remarque assez aisément que l'algorithme optimal est le plus performant, quel que soient les paramètres.
+Au niveau des autres algorithme, on a peu de différence notable, les taux de défauts de pages sont assez similaires.
+
+\subsection{Exemples}
+\subsubsection{Algorithme Optimal}
+
+\includegraphics{algos/algo4-256.pdf}
+
+Taux de défaut de pages en fonction du nombre de pages, avec 256 cases RAM en utilisant l'algorithme optimal.
+
+\subsubsection{Algorithme FIFO}
+
+\includegraphics{algos/algo1-256.pdf}
+
+Taux de défaut de pages en fonction du nombre de pages, avec 256 cases RAM en utilisant l'algorithme FIFO.
+
+\subsubsection{Algorithme LRU}
+
+\includegraphics{algos/algo2-256.pdf}
+
+Taux de défaut de pages en fonction du nombre de pages, avec 256 cases RAM en utilisant l'algorithme LRU.
+
+\subsubsection{Algorithme de l'Horloge}
+
+\includegraphics{algos/algo3-256.pdf}
+
+Taux de défaut de pages en fonction du nombre de pages, avec 256 cases RAM en utilisant l'algorithme de l'horloge.
+
+\end{document}

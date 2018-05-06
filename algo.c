@@ -76,7 +76,6 @@ int main(int argc, char* argv[])
     while(fgets(ligne,10,acces_mem) != NULL)
     {
 	acces[i] = atoi(ligne);
-	printf("%d ",acces[i]);
 	i++;
     }
 
@@ -86,21 +85,21 @@ int main(int argc, char* argv[])
 
     // FIFO
     if(algo == 1)
-		nbDefPage = fifo(nbAcces, valide, acces, caseRAM);
+	nbDefPage = fifo(nbAcces, valide, acces, caseRAM);
 
     // LRU
     else if(algo == 2)
-		nbDefPage = lru(nbPage, nbAcces, valide, acces, caseRAM);
+	nbDefPage = lru(nbPage, nbAcces, valide, acces, caseRAM);
 
     // Horloge
     else if(algo == 3)
-		nbDefPage = horloge(nbPage,nbAcces,valide,acces,caseRAM);
+	nbDefPage = horloge(nbPage,nbAcces,valide,acces,caseRAM);
 
     // optimal
     else if(algo == 4)
-		nbDefPage = optimal(nbPage,acces,valide,caseRAM,nbAcces);
+	nbDefPage = optimal(nbPage,acces,valide,caseRAM,nbAcces);
 
-    printf("\nDefauts de page : %.2f%%\n", (1.0*nbDefPage/nbAcces)*100);
+    printf("%d %.2f\n", nbPage, (1.0*nbDefPage/nbAcces)*100);
 
     fclose(acces_mem);
 
@@ -173,14 +172,13 @@ int lru(int nbPage,int nbAcces,int *valide, int *acces, int caseRAM)
     for(i=0;i<nbAcces;i++)
     {
 	page = acces[i];
+	plus_vieux = 0;
 
 	// On incremente la valeur de chaque acces
 	// et on met celui qu'on traite a 0
 	for(j=0;j<nbPage;j++)
-	{
 	    dernier_acces[j]++;
-	    dernier_acces[page] = 0;
-	}
+	dernier_acces[page] = 0;
 
 	// Si la page n'est pas en RAM
 	if(!valide[page])
@@ -227,65 +225,65 @@ int horloge(int nbPage, int nbAcces,int *valide, int *acces, int caseRAM)
     b_acces = (int*)calloc(nbPage,sizeof(int));
     if(b_acces == NULL)
     {
-		fprintf(stderr,"Erreur mémoire\n");
-		exit(EXIT_FAILURE);
+	fprintf(stderr,"Erreur mémoire\n");
+	exit(EXIT_FAILURE);
     }
 
     // On parcours les accès
     for(i=0;i<nbAcces;i++)
     {
-		page = acces[i];
-		b_acces[page] = 1;
+	page = acces[i];
+	b_acces[page] = 1;
 
-		// Si la page n'est pas en RAM
-		if(!valide[page])
+	// Si la page n'est pas en RAM
+	if(!valide[page])
+	{
+	    valide[page] = 1;
+
+	    // Si on a encore de la place
+	    if(j < caseRAM)
+	    {
+		// Si on est sur la derniere case -> on boucle
+		if(j == caseRAM-1)
 		{
-		    valide[page] = 1;
+		    pageRAM = enfiler(pageRAM,page);
+		    pageRAM->suivant = pageRAM;
+		}
+		else
+		    pageRAM = enfiler(pageRAM,page);
 
-		    // Si on a encore de la place
-		    if(j < caseRAM)
+		j++;
+	    }
+
+	    // Sinon -> défaut de page
+	    else
+	    {
+		nbDefPage++;
+		pointeur = 0;
+
+		// On test si on peut inserer
+		while(!pointeur)
+		{
+		    x = renvoie_premier_liste(pageRAM);
+
+		    // Si bit = 0
+		    if(!b_acces[x])
 		    {
-				// Si on est sur la derniere case -> on boucle
-				if(j == caseRAM-1)
-				{
-					pageRAM = enfiler(pageRAM,page);
-					pageRAM->suivant = pageRAM;
-				}
-				else
-				    pageRAM = enfiler(pageRAM,page);
-
-				j++;
+			// On remplace
+			valide[x] = 0;
+			pageRAM->objet = page;
+			pointeur = 1;
 		    }
-
-		    // Sinon -> défaut de page
+		    // Si bit = 1
 		    else
 		    {
-				nbDefPage++;
-				pointeur = 0;
-
-			// On test si on peut inserer
-				while(!pointeur)
-				{
-					x = renvoie_premier_liste(pageRAM);
-
-					// Si bit = 0
-					if(!b_acces[x])
-				    {
-						// On remplace
-						valide[x] = 0;
-						pageRAM->objet = page;
-						pointeur = 1;
-				    }
-				    // Si bit = 1
-				    else
-				  	{
-						// On fait tourner l'horloge
-						b_acces[x] = 0;
-						pageRAM = pageRAM->suivant;
-				    }
-				}
+			// On fait tourner l'horloge
+			b_acces[x] = 0;
+			pageRAM = pageRAM->suivant;
 		    }
 		}
+	    }
+	}
     }
 
     free(pageRAM);
@@ -297,7 +295,7 @@ int optimal(int nbPage, int *acces, int *valide, int caseRAM, int nbAcces)
     int nbDefPage = 0;
     int i,j=0,k,l;
     int page;
-	int plus_loin, a_suppr;
+    int plus_loin, a_suppr;
 
     // Pour calculer le prochain acces
     int *prochain;
@@ -306,55 +304,55 @@ int optimal(int nbPage, int *acces, int *valide, int caseRAM, int nbAcces)
     // On parcours les acces
     for(i=0;i<nbAcces;i++)
     {
-		page = acces[i];
+	page = acces[i];
 
-		// Si la page n'est pas en RAM
-		if(!valide[page])
+	// Si la page n'est pas en RAM
+	if(!valide[page])
+	{
+	    valide[page] = 1;
+
+	    // Si on a encore de la place
+	    if(j < caseRAM)
+		j++;
+
+	    // Sinon -> défaut de page
+	    else
+	    {
+		nbDefPage++;
+		plus_loin = 0;
+		// On parcous les pages
+		for(k=0;k<=nbPage;k++)
 		{
-		    valide[page] = 1;
-
-		    // Si on a encore de la place
-		    if(j < caseRAM)
-				j++;
-
-			// Sinon -> défaut de page
-		    else
+		    // On met a 0 dans prochain, celle qui sont en RAM
+		    if(valide[k] && k != page)
 		    {
-				nbDefPage++;
-				plus_loin = 0;
-				// On parcous les pages
-				for(k=0;k<=nbPage;k++)
-				{
-					// On met a 0 dans prochain, celle qui sont en RAM
-					if(valide[k] && k != page)
-					{
-						prochain[k] = 0;
-						l = i+1;
+			prochain[k] = 0;
+			l = i+1;
 
-						while(acces[l] != k && l < nbAcces)
-						{
-							l++;
-							prochain[k]++;
-						}
-					}
-				}
-				// On cherche la page en RAM qui sera utilisée la plus tard
-				for(k=0;k<=nbPage;k++)
-				{
-					if(valide[k] && k!=page)
-					{
-						if(plus_loin <= prochain[k])
-						{
-							plus_loin = prochain[k];
-							a_suppr = k;
-						}
-					}
-				}
-				// Et on la remplace
-				valide[a_suppr] = 0;
+			while(acces[l] != k && l < nbAcces)
+			{
+			    l++;
+			    prochain[k]++;
+			}
 		    }
 		}
+		// On cherche la page en RAM qui sera utilisée la plus tard
+		for(k=0;k<=nbPage;k++)
+		{
+		    if(valide[k] && k!=page)
+		    {
+			if(plus_loin <= prochain[k])
+			{
+			    plus_loin = prochain[k];
+			    a_suppr = k;
+			}
+		    }
+		}
+		// Et on la remplace
+		valide[a_suppr] = 0;
+	    }
+	}
     }
-	free(prochain);
-	return nbDefPage;
+    free(prochain);
+    return nbDefPage;
 }
